@@ -11,11 +11,17 @@
 
 * Notes (temporary)                                                :noexport:
 
-** TODO Add ebib stuff
-
 ** TODO Write instructions
 
-** TODO Make github repo
+** DONE Add ebib stuff
+   :LOGBOOK:
+   - State "DONE"       from "TODO"       [2014-03-02 Sun 09:49]
+   :END:
+
+** DONE Make github repo
+   :LOGBOOK:
+   - State "DONE"       from "TODO"       [2014-03-02 Sun 08:37]
+   :END:
 * Instructions for Your /PLOS ONE/ Article                         :noexport:
 
 ** Checklist [0/7]                                 
@@ -91,11 +97,12 @@ The abstract should:
 
 #+name: open-source-software
 #+attr_latex: :font \footnotesize :booktabs t
-#+caption[Open source software required to reproduce the analysis]: *Open source software required to reproduce the analysis.*
+#+caption[Open source software requirements]: *Open source software requirements.*
 | Software        | Distribution      | Notes                                       |
 |-----------------+-------------------+---------------------------------------------|
 | Emacs           | [[http://www.gnu.org/software/emacs/][GNU Emacs]]         | See distribution installation instructions  |
 |                 | [[http://www.us.xemacs.org/][XEmacs]]            | See distribution installation instructions  |
+| Ebib            | [[http://joostkremers.github.io/ebib/][Ebib]]              | Easy installation via [[http://melpa.milkbox.net/#/][MELPA]]                      |
 | \LaTeX          | [[http://www.tug.org/texlive][TeX Live (Linux)]]  | See distribution installation instructions  |
 |                 | [[http://www.tug.org/mactex/][MacTeX (Mac OS X)]] | See distribution installation instructions  |
 |                 | [[http://www.tug.org/protext/][proTeXt (Windows)]] | See distribution installation instructions  |
@@ -117,10 +124,10 @@ The abstract should:
 #+caption[Compendium contents]: *Compendium contents.*
 #+attr_latex: :font \footnotesize :booktabs t
 #+name: compendium-contents
-| Description                     | File name               | Link to file                                                      |
-|---------------------------------+-------------------------+-------------------------------------------------------------------|
+| Description                       | File name               | Link to file                                                      |
+|-----------------------------------+-------------------------+-------------------------------------------------------------------|
 | Org mode /PLOS ONE/ template file | =plos-one-template.org= | @@latex:\attachfile[mimetype=text/plain]{plos-one-template.org}@@ |
-| Project bibliographic database  | =local.bib=             | @@latex:\attachfile[mimetype=text/plain]{local.bib}@@             |
+| Project bibliographic database    | =local.bib=             | @@latex:\attachfile[mimetype=text/plain]{local.bib}@@             |
 | /PLOS ONE/ bibliography style     | =plos2009.bst=          | @@latex:\attachfile[mimetype=text/plain]{plos2009.bst}@@          |
 
 ** Section(s) to be written
@@ -489,6 +496,17 @@ from lines like: #+PROPERTY: value"
 (org-babel-tangle)
 #+end_src
 
+*** Ebib setup
+#+name: ebib-setup
+#+begin_src emacs-lisp
+  (autoload 'ebib "ebib" "Ebib, a BibTeX database manager." t)
+  (dolist (hook '(org-mode-hook))
+    (add-hook hook (lambda () (local-set-key "\C-cb" 'ebib-insert-bibtex-key))))
+ (setq ebib-preload-bib-files (quote ("local.bib")))
+  (setq ebib-bib-search-dirs
+        (quote ("./")))
+#+end_src
+
 ** Striking Image
 
 #+begin_quote
@@ -531,6 +549,7 @@ you do.
 # eval: (and (fboundp 'org-sbe) (not (fboundp 'sbe)) (fset 'sbe 'org-sbe))
 # eval: (sbe "user-entities")
 # eval: (sbe "define-cite-link")
+# eval: (sbe "ebib-setup")
 # End:
 
 
