@@ -9,7 +9,13 @@
 
 #+call: plos-one-start(kwd="TITLE") :wrap latex
 
-* PLOS ONE Project                                                 :noexport:
+* Notes (temporary)                                                :noexport:
+
+** TODO Add ebib stuff
+
+** TODO Write instructions
+
+* Instructions for Your /PLOS ONE/ Article                         :noexport:
 
 ** Checklist [0/7]                                 
   - [ ] Configure [[export-setup-plos-one][PLOS ONE initialization files]]
@@ -112,12 +118,34 @@ The abstract should:
 #+name: compendium-contents
 | Description                     | File name               | Link to file                                                      |
 |---------------------------------+-------------------------+-------------------------------------------------------------------|
-| Org mode PLOS ONE template file | =plos-one-template.org= | @@latex:\attachfile[mimetype=text/plain]{plos-one-template.org}@@ |
+| Org mode /PLOS ONE/ template file | =plos-one-template.org= | @@latex:\attachfile[mimetype=text/plain]{plos-one-template.org}@@ |
 | Project bibliographic database  | =local.bib=             | @@latex:\attachfile[mimetype=text/plain]{local.bib}@@             |
-| PLOS ONE bibliography style     | =plos2009.bst=          | @@latex:\attachfile[mimetype=text/plain]{plos2009.bst}@@          |
+| /PLOS ONE/ bibliography style     | =plos2009.bst=          | @@latex:\attachfile[mimetype=text/plain]{plos2009.bst}@@          |
 
 ** Section(s) to be written
-* PLOS ONE Template                                                :noexport:
+* Cover Letter                                                     :noexport:
+:PROPERTIES:
+   :EXPORT_FILE_NAME: cover-letter
+   :END:
+
+** PLOS-One Instructions for Cover Letter [0/7]                    :noexport:
+You should supply an approximately one page cover letter that:
+
+ - [ ] Concisely summarizes why your paper is a valuable addition to the
+   scientific literature
+ - [ ] Briefly relates your study to previously published work
+ - [ ] Specifies the type of article you are submitting (for example,
+   research article, systematic review, meta-analysis, clinical trial)
+ - [ ] Describes any prior interactions with PLOS regarding the submitted
+   manuscript
+ - [ ] Suggests appropriate /PLOS ONE/ Academic Editors to handle your
+   manuscript ([[http://www.plosone.org/static/edboard][view a complete listing of our academic editors]])
+ - [ ] Lists any recommended or opposed reviewers
+ - [ ] Your cover letter should not include requests to reduce or waive
+   publication fees. Should your manuscript be accepted, you will have
+   the opportunity to include your requests at that time. See PLOS ONE
+   Editorial Policy for more information regarding publication fees.
+* /PLOS ONE/ Template                                              :noexport:
 ** Preamble Source Code
 
 The source code block =plos-one-start= is called before the first
@@ -480,41 +508,18 @@ The =author-table= holds information on the authors and their
 affiliations.  It is assembled and placed on the title page by [[plos-one-start][this
 Emacs lisp source code block]].  Most of the column names should be
 self-explanatory. The =Corresponding= column should have "yes" or "no"
-entries that indicate whether the author is the corresponding author,
-or not.
+entries that indicate whether or not the author is the corresponding
+author.
 
-Do not add a column or change the position of a column.  The rather
-simple-minded code that uses the information in the table will be
-confused if you do.
+*NOTE* Do not add a column or change the position of a column.  The
+rather simple-minded code that processes the table will be confused if
+you do.
 
 #+name: author-table
 | Author name | Department | Institution | City | State | Country | Email | Corresponding |
 |-------------+------------+-------------+------+-------+---------+-------+---------------|
 
-** Cover Letter
-   :PROPERTIES:
-   :EXPORT_FILE_NAME: cover-letter
-   :END:
-
-*** PLOS-One Instructions for Cover Letter [0/7]                   :noexport:
-You should supply an approximately one page cover letter that:
-
- - [ ] Concisely summarizes why your paper is a valuable addition to the
-   scientific literature
- - [ ] Briefly relates your study to previously published work
- - [ ] Specifies the type of article you are submitting (for example,
-   research article, systematic review, meta-analysis, clinical trial)
- - [ ] Describes any prior interactions with PLOS regarding the submitted
-   manuscript
- - [ ] Suggests appropriate PLOS ONE Academic Editors to handle your
-   manuscript ([[http://www.plosone.org/static/edboard][view a complete listing of our academic editors]])
- - [ ] Lists any recommended or opposed reviewers
- - [ ] Your cover letter should not include requests to reduce or waive
-   publication fees. Should your manuscript be accepted, you will have
-   the opportunity to include your requests at that time. See PLOS ONE
-   Editorial Policy for more information regarding publication fees.
-
-** Local variables
+* Local variables                                                  :noexport:
 
 # Local Variables: 
 # eval: (require 'ox-latex)
@@ -526,6 +531,7 @@ You should supply an approximately one page cover letter that:
 # eval: (sbe "user-entities")
 # eval: (sbe "define-cite-link")
 # End:
+
 
 
               
