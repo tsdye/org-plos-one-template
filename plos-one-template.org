@@ -1,0 +1,532 @@
+#+TITLE:
+#+DATE:
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:nil toc:nil \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t ':t ^:{}
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:nil pri:nil tags:not-in-toc
+#+OPTIONS: texht:nil
+#+LATEX_CLASS: plos-devel
+#+STARTUP: entitiespretty
+
+#+call: plos-one-start(kwd="TITLE") :wrap latex
+
+* PLOS ONE Project                                                 :noexport:
+
+** Checklist [0/7]                                 
+  - [ ] Configure [[export-setup-plos-one][PLOS ONE initialization files]]
+  - [ ] Tangle initialization files by [[elisp:(sbe "tangle-init-file")][clicking here]]
+  - [ ] Fill out the [[author-table][author table]]
+  - [ ] Possibly configure the [[end-matter][bibliography command]]
+  - [ ] Configure the [[Supporting Information Document][supporting information document]] EXPORT_TITLE property
+  - [ ] Prepare a [[Striking Image][striking image]]
+  - [ ] Prepare a [[PLOS-One Instructions for Cover Letter][cover letter]]
+
+* Abstract
+
+# add the abstract above this line
+
+** /PLOS ONE/ instructions for the abstract [0/5]                  :noexport:
+The abstract should:
+ - [ ] Describe the main objective(s) of the study
+ - [ ] Explain how the study was done, including any model organisms
+   used, without methodological detail
+ - [ ] Summarize the most important results and their significance
+ - [ ] Not exceed 300 words
+ - [ ] Abstracts should not include:
+   - [ ] Citations
+   - [ ] Abbreviations, if possible
+* Introduction
+* Section(s) to be written
+* Discussion
+* Acknowledgments
+
+
+# acknowledge colleagues above this line
+
+#+name: end-matter
+#+begin_latex
+  % Add the base name of the .bib file(s) between the curly braces 
+  \bibliography{local}
+  \clearpage
+#+end_latex
+
+* Supporting Information
+
+# describe supporting information above this line
+
+#+LATEX: \clearpage
+
+* Figure Legends
+
+# insert figures above this line
+
+#+latex: \clearpage
+
+* Tables
+
+# insert tables above this line
+
+#+latex: \clearpage
+
+* Supporting Information Document                                  :noexport:
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: supporting-information
+   :EXPORT_TITLE: Supporting Information for ``YOUR TITLE HERE''
+   :EXPORT_LATEX_HEADER: \input{supplementary-material-header}
+   :END:
+
+#+call: plos-one-start(kwd="EXPORT_TITLE") :wrap latex
+
+#+TOC: tables
+#+TOC: listings
+
+** Introduction
+
+
+#+name: open-source-software
+#+attr_latex: :font \footnotesize :booktabs t
+#+caption[Open source software required to reproduce the analysis]: *Open source software required to reproduce the analysis.*
+| Software        | Distribution      | Notes                                       |
+|-----------------+-------------------+---------------------------------------------|
+| Emacs           | [[http://www.gnu.org/software/emacs/][GNU Emacs]]         | See distribution installation instructions  |
+|                 | [[http://www.us.xemacs.org/][XEmacs]]            | See distribution installation instructions  |
+| \LaTeX          | [[http://www.tug.org/texlive][TeX Live (Linux)]]  | See distribution installation instructions  |
+|                 | [[http://www.tug.org/mactex/][MacTeX (Mac OS X)]] | See distribution installation instructions  |
+|                 | [[http://www.tug.org/protext/][proTeXt (Windows)]] | See distribution installation instructions  |
+| \LaTeX packages | [[http://www.ctan.org/pkg/setspace][setspace]]          | Required by /PLOS ONE/                      |
+|                 | [[http://www.ctan.org/pkg/amsmath][amsmath]]           | Required by /PLOS ONE/                      |
+|                 | [[http://www.ctan.org/pkg/amsfonts][amssymb]]           | Required by /PLOS ONE/                      |
+|                 | [[http://www.ctan.org/pkg/graphicx][graphicx]]          | Required by /PLOS ONE/                      |
+|                 | [[http://www.ctan.org/pkg/cite][cite]]              | Required by /PLOS ONE/                      |
+|                 | [[http://www.ctan.org/pkg/color][color]]             | Required by /PLOS ONE/                      |
+|                 | [[http://www.ctan.org/pkg/caption][caption]]           | Required by /PLOS ONE/                      |
+|                 | [[http://www.ctan.org/pkg/minted][minted]]            | Used by the Supporting Information document |
+|                 | [[http://www.ctan.org/pkg/longtable][longtable]]         | Used by the Supporting Information document |
+|                 | [[http://www.ctan.org/pkg/booktabs][booktabs]]          | Used by the Supporting Information document |
+|                 | [[http://www.ctan.org/pkg/attachfile][attachfile]]        | Used by the Supporting Information document |
+|                 | [[http://www.ctan.org/tex-archive/usergrps/dante/dtk][dtklogos]]          | Used by the Supporting Information document |
+|                 | [[http://www.ctan.org/pkg/paralist][paralist]]          | Used by the Supporting Information document |
+
+
+#+caption[Compendium contents]: *Compendium contents.*
+#+attr_latex: :font \footnotesize :booktabs t
+#+name: compendium-contents
+| Description                     | File name               | Link to file                                                      |
+|---------------------------------+-------------------------+-------------------------------------------------------------------|
+| Org mode PLOS ONE template file | =plos-one-template.org= | @@latex:\attachfile[mimetype=text/plain]{plos-one-template.org}@@ |
+| Project bibliographic database  | =local.bib=             | @@latex:\attachfile[mimetype=text/plain]{local.bib}@@             |
+| PLOS ONE bibliography style     | =plos2009.bst=          | @@latex:\attachfile[mimetype=text/plain]{plos2009.bst}@@          |
+
+** Section(s) to be written
+* PLOS ONE Template                                                :noexport:
+** Preamble Source Code
+
+The source code block =plos-one-start= is called before the first
+headline. It takes information from the =author-table= and creates a
+title page that meets the following [[http://www.plosone.org/static/guidelines#format][/PLOS ONE/ specification]]:
+
+#+begin_quote
+The title, authors, and affiliations should all be included on a title
+page as the first page of the manuscript file.
+#+end_quote
+
+#+name: plos-one-start
+#+header: :var tab=author-table
+#+header: :var kwd="TITLE"
+#+header: :results raw 
+#+header: :wrap latex
+#+header: :colnames no 
+#+header: :hlines yes
+#+header: :noweb yes
+#+header: :exports results
+#+begin_src emacs-lisp
+  <<jk-keywords>>
+  (require 'cl)
+  (defun author-name (recs)
+    "Format the author name list."
+    (let ((i 0))
+      (mapcar (lambda (row)
+                (concat (format "%s$^{%d%s" (first row)
+                                (incf i)
+                                (if (equal "yes" (eighth row)) ",\\ast" ""))
+                        (if (equal row (car (last recs))) "}$" "}$,")))
+              recs)))
+  
+  (defun author-affiliation (recs)
+    "Format the author affiliation list."
+    (let ((i 0))
+      (mapcar (lambda (row)
+                (format "\\bf{%d} %s, %s, %s, %s, %s" (incf i)
+                        (second row) (third row) (fourth row)
+                        (fifth row) (sixth row)))
+              recs)))
+  (defun corresponding-email (recs)
+    "Return the corresponding email."
+    (mapcar (lambda (row)
+              (format "%s" (if (equal "yes" (eighth row)) (seventh row) "")))
+            recs))
+  
+  (let* ((tab (cdr (cdr tab)))
+         (a (author-name tab))
+         (b (author-affiliation tab))
+         (c (corresponding-email tab)))
+    (concat (format "\\begin{flushleft}\n{\\Large\n\\textbf{%s}\n}\n\\\\\n"
+                    (jk-org-kwd kwd))
+            (mapconcat 'identity a "\n") "\n\\\\\n"
+            (mapconcat 'identity b "\n\\\\\n")
+            "\n\\\\\n$\\ast$ E-mail: "
+            (mapconcat 'identity c "\n")
+            "\n\\end{flushleft}\n\\newpage"))
+#+end_src
+
+#+results: plos-one-start
+#+BEGIN_latex
+\begin{flushleft}
+{\Large
+\textbf{Structure and Growth of the Leeward Kohala Field System: An Analysis with Directed Graphs}
+}
+\\
+Thomas S. Dye$^{1,\ast}$
+\\
+\bf{1} Department of Anthropology, University of Hawai`i, Honolulu, HI, USA
+\\
+$\ast$ E-mail: tsd@tsdye.com
+\end{flushleft}
+#+END_latex
+** Org-mode Setup (New Exporter)
+*** Export setup for /PLOS ONE/
+
+The following source code block can be configured for the user's set
+up by setting the =:var path-to-ox-latex= header argument to an
+appropriate value.
+
+#+name: export-setup-plos-one
+#+header: :var path-to-ox-latex="~/.emacs.d/src/org-mode/lisp"
+#+header: :noweb yes
+#+header: :results silent
+#+header: :tangle init-plos.el
+#+begin_src emacs-lisp
+  (setq load-path (cons path-to-ox-latex load-path))
+  (require 'ox-latex)
+  (setq org-confirm-babel-evaluate nil)
+  (setq org-latex-listings 'minted)
+  (setq org-latex-listings-options
+        '(("frame" "lines")
+          ("basicstyle" "\\footnotesize")
+          ("numbers" "left")
+          ("numberstyle" "\\tiny")))
+  (setq org-latex-minted-options
+        '(("frame" "lines")
+          ("fontsize" "\\footnotesize")
+          ("linenos" "")))
+  (add-to-list 'org-latex-minted-langs '(lisp "cl"))
+  (setq org-latex-pdf-process
+        '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+          "bibtex %b"
+          "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+          "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((R . t)
+       (dot . t)
+       (emacs-lisp . t)
+       (latex . t)
+       (org . t)
+       (sh . t)))
+    <<user-entities>>
+    (setq org-latex-packages-alist nil)
+    (add-to-list 'org-latex-packages-alist '("" "setspace"))
+    (add-to-list 'org-latex-packages-alist '("" "amsmath"))
+    (add-to-list 'org-latex-packages-alist '("" "amssymb"))
+    (add-to-list 'org-latex-packages-alist '("" "graphicx"))
+    (add-to-list 'org-latex-packages-alist '("" "cite"))
+    (add-to-list 'org-latex-packages-alist '("usenames,dvipsnames" "color"))
+    (add-to-list 'org-latex-packages-alist '("labelfont=bf,labelsep=period,justification=raggedright" "caption"))
+    (setq org-latex-tables-booktabs nil)
+    (setq org-latex-title-command nil)
+    (setq org-latex-remove-logfiles nil)
+    (setq org-latex-toc-command "\\tableofcontents\n\n")
+    (setq org-latex-classes nil)
+    (add-to-list 'org-latex-classes
+                 '("plos-submit"
+                   "\\documentclass[10pt]{article}
+    [NO-DEFAULT-PACKAGES]
+    [PACKAGES]
+    [EXTRA]
+    \\doublespacing
+    % Text layout
+    \\topmargin 0.0cm
+    \\oddsidemargin 0.5cm
+    \\evensidemargin 0.5cm
+    \\textwidth 16cm 
+    \\textheight 21cm
+    \\bibliographystyle{plos2009}
+    \\makeatletter
+    \\renewcommand{\\@biblabel}[1]{\\quad#1.}
+    \\makeatother
+    \\pagestyle{myheadings}
+    \\renewcommand{\\includegraphics}[2][]{}
+    %% ** EDIT HERE **
+    \\DeclareCaptionLabelFormat{si}{#1S#2}    
+    
+    %% ** EDIT HERE **
+    %% PLEASE INCLUDE ALL MACROS BELOW
+    %% \\newcommand{\\texttwosuperior}{$^{2}$}
+    %% \\newcommand{\\textpm}{$\\pm$}
+    \\newcommand{\\rc}{$^{14}C$}
+    %% END MACROS SECTION"
+                     ("\\section{%s}" . "\\section*{%s}")
+                     ("\\subsection{%s}" . "\\subsection*{%s}")
+                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+    (add-to-list 'org-latex-classes
+                 '("plos-devel"
+                   "\\documentclass[10pt]{article}
+    [NO-DEFAULT-PACKAGES]
+    [PACKAGES]
+    [EXTRA]
+    \\doublespacing
+    % Text layout
+    \\topmargin 0.0cm
+    \\oddsidemargin 0.5cm
+    \\evensidemargin 0.5cm
+    \\textwidth 16cm 
+    \\textheight 21cm
+    \\bibliographystyle{plos2009}
+    \\makeatletter
+    \\renewcommand{\\@biblabel}[1]{\\quad#1.}
+    \\makeatother
+    \\pagestyle{myheadings}
+    %% ** EDIT HERE **
+    \\DeclareCaptionLabelFormat{si}{#1S#2}    
+    
+    %% ** EDIT HERE **
+    %% PLEASE INCLUDE ALL MACROS BELOW
+    %% \\newcommand{\\texttwosuperior}{$^{2}$}
+    %% \\newcommand{\\textpm}{$\\pm$}
+    \\newcommand{\\rc}{$^{14}C$}
+    %% END MACROS SECTION"
+                     ("\\section{%s}" . "\\section*{%s}")
+                     ("\\subsection{%s}" . "\\subsection*{%s}")
+                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+      <<ngz-nbsp>>
+      <<tsd-textpm>>
+      <<tsd-continuation-strings>>
+      <<define-cite-link>>
+#+end_src
+
+*** Include File for Supporting Information Class File
+
+#+name: supplementary-material-latex-header
+#+header: :tangle supplementary-material-header.tex
+#+begin_src latex
+  \usepackage{dtklogos}% for the \BibTeX command
+  \usepackage{longtable}
+  \usepackage{minted}
+  \usemintedstyle{tango}
+  \renewcommand\listoflistingscaption{List of Source Code Block Listings}
+  \usepackage{booktabs}
+  \usepackage{paralist}
+  \usepackage[colorlinks=true,allcolors=blue]{hyperref}
+  \usepackage{attachfile}
+  \renewcommand\thefigure{S\arabic{figure}} 
+  \renewcommand\thetable{S\arabic{table}} 
+  \renewcommand\thelisting{S\arabic{listing}} 
+#+end_src
+
+*** User Entities
+#+name: user-entities
+#+begin_src emacs-lisp
+  (setq org-entities-user nil)
+  (add-to-list 'org-entities-user '("space" "\\ " nil " " " " " " "–"))
+  (add-to-list 'org-entities-user '("amacron" "\\={a}" nil "&#0257" "a" "a" "ā"))
+  (add-to-list 'org-entities-user '("emacron" "\\={e}" nil "&#0275" "e" "e" "ē"))
+  (add-to-list 'org-entities-user '("imacron" "\\={\\i}" nil "&#0299" "i" "i" "ī"))
+  (add-to-list 'org-entities-user '("omacron" "\\={o}" nil "&#0333" "o" "o" "ō"))
+  (add-to-list 'org-entities-user '("umacron" "\\={u}" nil "&#0363" "u" "u" "ū"))
+  (add-to-list 'org-entities-user '("Amacron" "\\={A}" nil "&#0256" "A" "A" "Ā"))
+  (add-to-list 'org-entities-user '("Emacron" "\\={E}" nil "&#0274" "E" "E" "Ē"))
+  (add-to-list 'org-entities-user '("Imacron" "\\={I}" nil "&#0298" "I" "I" "Ī"))
+  (add-to-list 'org-entities-user '("Omacron" "\\={O}" nil "&#0332" "O" "O" "Ō"))
+  (add-to-list 'org-entities-user '("Umacron" "\\={U}" nil "&#0362" "U" "U" "Ū"))
+#+end_src
+
+*** Link Type for Citations
+
+#+name: define-cite-link
+#+header: :results silent :exports none
+#+begin_src emacs-lisp
+  (org-add-link-type
+   "cite" 'ebib
+   (lambda (path desc format)
+     (cond
+      ((eq format 'html)
+       (format "(<cite>%s</cite>)" path))
+      ((eq format 'latex)
+           (format "\\cite{%s}" path)))))
+#+end_src
+
+*** Nicolas Goaziou's Filter for Non-breaking Spaces
+Make the non-breaking space with alt-shift
+
+You may add _ to "pre" part of `org-emphasis-regexp-components' in
+order to typeset constructs such as /Genus/ cf. /species/.
+
+So far, I've added " ", "–" which are the characters for non-breaking
+space and single space.
+
+#+name: ngz-nbsp
+#+begin_src emacs-lisp
+(defun ngz-latex-filter-nobreaks (text backend info)
+  "Ensure \"_\" are properly handled in Beamer/LaTeX export."
+  (when (memq backend '(beamer latex))
+    (replace-regexp-in-string " " "~" text)))
+(add-to-list 'org-export-filter-plain-text-functions
+             'ngz-latex-filter-nobreaks)
+#+end_src
+
+*** Filter for textpm
+Add the placeholder with alt-shift-+
+
+#+name: tsd-textpm
+#+begin_src emacs-lisp
+(defun tsd-latex-filter-textpm (text backend info)
+  "Replace textpm placeholders in Beamer/LaTeX export."
+  (when (memq backend '(beamer latex))
+    (replace-regexp-in-string "±" "\\textpm\\" text nil t)))
+(add-to-list 'org-export-filter-plain-text-functions
+             'tsd-latex-filter-textpm)
+#+end_src
+
+#+results: tsd-textpm
+| tsd-latex-filter-textpm | tsd-latex-filter-textcites | tsd-latex-filter-parencites | ngz-latex-filter-nobreaks |
+
+*** DONE Filter for table continuation strings
+   :LOGBOOK:
+   - State "DONE"       from "TODO"       [2013-11-07 Thu 21:05]
+   :END:
+#+name: tsd-continuation-strings
+#+begin_src emacs-lisp
+  (defun my-personal-table-continuation-strings (row backend info)
+    (when (org-export-derived-backend-p backend 'latex)
+      (replace-regexp-in-string
+       "multicolumn{[0-9]+}{l}{\\(.*\\)}" "\\ldots\\ \\tablename\\ \\thetable{} continued from previous page"
+       (replace-regexp-in-string
+        "multicolumn{[0-9]+}{r}{\\(.*\\)}" "continued on next page \\ldots"
+        row nil t 1) nil t 1)))
+  (add-to-list 'org-export-filter-table-functions
+               'my-personal-table-continuation-strings)
+#+end_src
+
+#+results: tsd-continuation-strings
+| my-personal-table-continuation-strings |
+
+*** Access keyword values
+
+This is taken from [[http://jkitchin.github.io/blog/2013/05/05/Getting-keyword-options-in-org-files/][John Kitchin's blog]].  It has been modified so
+=org-element-map= returns node properties in addition to keywords. 
+
+#+name: jk-keywords
+#+header: :results silent
+#+begin_src emacs-lisp
+(defun jk-org-kwds ()
+  "parse the buffer and return a cons list of (property . value)
+from lines like: #+PROPERTY: value"
+  (org-element-map (org-element-parse-buffer 'element) '(keyword node-property)
+                   (lambda (keyword) (cons (org-element-property :key keyword)
+                                           (org-element-property :value keyword)))))
+
+(defun jk-org-kwd (KEYWORD)
+  "get the value of a KEYWORD in the form of #+KEYWORD: value"
+  (cdr (assoc KEYWORD (jk-org-kwds))))
+#+end_src
+
+
+#+name: test-properties
+#+begin_src emacs-lisp
+(jk-org-kwd "LANGUAGE")
+#+end_src
+
+#+results: test-properties
+: en
+
+*** Tangle the initialization file
+
+#+name: tangle-init-file
+#+header: :results silent
+#+begin_src emacs-lisp
+(org-babel-tangle)
+#+end_src
+
+** Striking Image
+
+#+begin_quote
+Authors are encouraged to upload a "striking image" that may be used
+to represent their paper online in places like the journal homepage or
+in search results. The striking image must be derived from a figure or
+supporting information file from the paper, ie. a cropped portion of
+an image or the entire image. Striking images should ideally be high
+resolution, eye-catching, single panel images, and should ideally
+avoid containing added details such as text, scale bars, and arrows.
+If no striking image is uploaded, a figure from the paper will be
+designated as the striking image.
+#+end_quote
+
+** Author Table
+
+The =author-table= holds information on the authors and their
+affiliations.  It is assembled and placed on the title page by [[plos-one-start][this
+Emacs lisp source code block]].  Most of the column names should be
+self-explanatory. The =Corresponding= column should have "yes" or "no"
+entries that indicate whether the author is the corresponding author,
+or not.
+
+Do not add a column or change the position of a column.  The rather
+simple-minded code that uses the information in the table will be
+confused if you do.
+
+#+name: author-table
+| Author name | Department | Institution | City | State | Country | Email | Corresponding |
+|-------------+------------+-------------+------+-------+---------+-------+---------------|
+
+** Cover Letter
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: cover-letter
+   :END:
+
+*** PLOS-One Instructions for Cover Letter [0/7]                   :noexport:
+You should supply an approximately one page cover letter that:
+
+ - [ ] Concisely summarizes why your paper is a valuable addition to the
+   scientific literature
+ - [ ] Briefly relates your study to previously published work
+ - [ ] Specifies the type of article you are submitting (for example,
+   research article, systematic review, meta-analysis, clinical trial)
+ - [ ] Describes any prior interactions with PLOS regarding the submitted
+   manuscript
+ - [ ] Suggests appropriate PLOS ONE Academic Editors to handle your
+   manuscript ([[http://www.plosone.org/static/edboard][view a complete listing of our academic editors]])
+ - [ ] Lists any recommended or opposed reviewers
+ - [ ] Your cover letter should not include requests to reduce or waive
+   publication fees. Should your manuscript be accepted, you will have
+   the opportunity to include your requests at that time. See PLOS ONE
+   Editorial Policy for more information regarding publication fees.
+
+** Local variables
+
+# Local Variables: 
+# eval: (require 'ox-latex)
+# eval: (setq org-export-async-init-file (expand-file-name "init-plos.el"))
+# org-export-in-background: t 
+# org-export-async-debug: t 
+# org-fontify-quote-and-verse-blocks: t 
+# eval: (and (fboundp 'org-sbe) (not (fboundp 'sbe)) (fset 'sbe 'org-sbe))
+# eval: (sbe "user-entities")
+# eval: (sbe "define-cite-link")
+# End:
+
+
+              
+
