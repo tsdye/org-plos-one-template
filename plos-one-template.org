@@ -24,7 +24,64 @@
    :END:
 * Instructions for Your /PLOS ONE/ Article                         :noexport:
 
-** Checklist [0/7]                                 
+This file provides a template to export an Org mode file to a LaTeX
+file that meets the specifications of the open-access journal [[http://www.plosone.org][/PLOS
+ONE/]]. It features:
+ - environment setup with [[https://www.gnu.org/software/emacs/manual/html_node/emacs/File-Variables.html][Emacs local variables]];
+ - [[http://orgmode.org/manual/The-Export-Dispatcher.html][asynchronous export]] to pdf via LaTeX;
+ - [[http://en.wikibooks.org/wiki/LaTeX/Document_Structure#Document_classes][custom document classes]] for article development and for submitting
+   to the journal;
+ - an optional [[http://www.plosone.org/static/supportingInformation][supporting information document]] capable of creating a
+   [[http://biostats.bepress.com/bioconductor/paper2/][compendium]] in pdf format;
+ - [[http://www.bibtex.org][BibTeX]] bibliography management with [[http://joostkremers.github.io/ebib/][Ebib]]
+
+These features are described in the following sections. In addition,
+there is a [[Checklist][checklist]] to help guide you through configuration and
+document preparation.
+
+** Emacs Local Variables
+
+The environment is set up with [[Local Variables][Emacs local variables]], which Emacs
+requires be found near the end of the file.
+
+The following lines initialize the Org mode LaTeX exporter, indicate
+the name of the asynchronous export initialization file, and then
+specify that asynchronous export should be used and that the export
+process should leave data behind in case there are problems.
+
+#+begin_example
+,# eval: (require 'ox-latex)
+,# eval: (setq org-export-async-init-file (expand-file-name "init-plos.el"))
+,# org-export-in-background: t 
+,# org-export-async-debug: t 
+#+end_example
+
+The following line provides compatibility across a recent Org mode
+function name change.
+
+#+begin_example
+,# eval: (and (fboundp 'org-sbe) (not (fboundp 'sbe)) (fset 'sbe 'org-sbe))
+#+end_example
+
+
+The following line executes a source code block that defines an Org
+mode link that functions to insert a bibliographic reference.
+
+#+begin_example
+,# eval: (sbe "define-cite-link")
+#+end_example
+
+
+** Asynchronous Export
+
+** Custom Document Classes
+
+** /PLOS ONE/ Supporting Information
+
+** Using Ebib
+
+** Checklist [0/9]                                 
+
   - [ ] Configure [[export-setup-plos-one][PLOS ONE initialization files]]
   - [ ] Tangle initialization files by [[elisp:(sbe "tangle-init-file")][clicking here]]
   - [ ] Fill out the [[author-table][author table]]
@@ -32,6 +89,9 @@
   - [ ] Configure the [[Supporting Information Document][supporting information document]] EXPORT_TITLE property
   - [ ] Prepare a [[Striking Image][striking image]]
   - [ ] Prepare a [[PLOS-One Instructions for Cover Letter][cover letter]]
+  - [ ] Optionally, export the supporting information document
+  - [ ] Export the article
+ 
 
 * Abstract
 
@@ -153,83 +213,38 @@ You should supply an approximately one page cover letter that:
    publication fees. Should your manuscript be accepted, you will have
    the opportunity to include your requests at that time. See PLOS ONE
    Editorial Policy for more information regarding publication fees.
-* /PLOS ONE/ Template                                              :noexport:
-** Preamble Source Code
-
-The source code block =plos-one-start= is called before the first
-headline. It takes information from the =author-table= and creates a
-title page that meets the following [[http://www.plosone.org/static/guidelines#format][/PLOS ONE/ specification]]:
+* Striking Image                                                   :noexport:
 
 #+begin_quote
-The title, authors, and affiliations should all be included on a title
-page as the first page of the manuscript file.
+Authors are encouraged to upload a "striking image" that may be used
+to represent their paper online in places like the journal homepage or
+in search results. The striking image must be derived from a figure or
+supporting information file from the paper, ie. a cropped portion of
+an image or the entire image. Striking images should ideally be high
+resolution, eye-catching, single panel images, and should ideally
+avoid containing added details such as text, scale bars, and arrows.
+If no striking image is uploaded, a figure from the paper will be
+designated as the striking image.
 #+end_quote
 
-#+name: plos-one-start
-#+header: :var tab=author-table
-#+header: :var kwd="TITLE"
-#+header: :results raw 
-#+header: :wrap latex
-#+header: :colnames no 
-#+header: :hlines yes
-#+header: :noweb yes
-#+header: :exports results
-#+begin_src emacs-lisp
-  <<jk-keywords>>
-  (require 'cl)
-  (defun author-name (recs)
-    "Format the author name list."
-    (let ((i 0))
-      (mapcar (lambda (row)
-                (concat (format "%s$^{%d%s" (first row)
-                                (incf i)
-                                (if (equal "yes" (eighth row)) ",\\ast" ""))
-                        (if (equal row (car (last recs))) "}$" "}$,")))
-              recs)))
-  
-  (defun author-affiliation (recs)
-    "Format the author affiliation list."
-    (let ((i 0))
-      (mapcar (lambda (row)
-                (format "\\bf{%d} %s, %s, %s, %s, %s" (incf i)
-                        (second row) (third row) (fourth row)
-                        (fifth row) (sixth row)))
-              recs)))
-  (defun corresponding-email (recs)
-    "Return the corresponding email."
-    (mapcar (lambda (row)
-              (format "%s" (if (equal "yes" (eighth row)) (seventh row) "")))
-            recs))
-  
-  (let* ((tab (cdr (cdr tab)))
-         (a (author-name tab))
-         (b (author-affiliation tab))
-         (c (corresponding-email tab)))
-    (concat (format "\\begin{flushleft}\n{\\Large\n\\textbf{%s}\n}\n\\\\\n"
-                    (jk-org-kwd kwd))
-            (mapconcat 'identity a "\n") "\n\\\\\n"
-            (mapconcat 'identity b "\n\\\\\n")
-            "\n\\\\\n$\\ast$ E-mail: "
-            (mapconcat 'identity c "\n")
-            "\n\\end{flushleft}\n\\newpage"))
-#+end_src
+* Author Table                                                     :noexport:
 
-#+results: plos-one-start
-#+BEGIN_latex
-\begin{flushleft}
-{\Large
-\textbf{Structure and Growth of the Leeward Kohala Field System: An Analysis with Directed Graphs}
-}
-\\
-Thomas S. Dye$^{1,\ast}$
-\\
-\bf{1} Department of Anthropology, University of Hawai`i, Honolulu, HI, USA
-\\
-$\ast$ E-mail: tsd@tsdye.com
-\end{flushleft}
-#+END_latex
-** Org-mode Setup (New Exporter)
-*** Export setup for /PLOS ONE/
+The =author-table= holds information on the authors and their
+affiliations.  It is assembled and placed on the title page by [[plos-one-start][this
+Emacs lisp source code block]].  Most of the column names should be
+self-explanatory. The =Corresponding= column should have "yes" or "no"
+entries that indicate whether or not the author is the corresponding
+author.
+
+*NOTE* Do not add a column or change the position of a column.  The
+rather simple-minded code that processes the table will be confused if
+you do.
+
+#+name: author-table
+| Author name | Department | Institution | City | State | Country | Email | Corresponding |
+|-------------+------------+-------------+------+-------+---------+-------+---------------|
+* /PLOS ONE/ Template Source Code                                  :noexport:
+** Export setup for /PLOS ONE/
 
 The following source code block can be configured for the user's set
 up by setting the =:var path-to-ox-latex= header argument to an
@@ -353,7 +368,7 @@ appropriate value.
       <<define-cite-link>>
 #+end_src
 
-*** Include File for Supporting Information Class File
+** Include File for Supporting Information Class File
 
 #+name: supplementary-material-latex-header
 #+header: :tangle supplementary-material-header.tex
@@ -372,24 +387,7 @@ appropriate value.
   \renewcommand\thelisting{S\arabic{listing}} 
 #+end_src
 
-*** User Entities
-#+name: user-entities
-#+begin_src emacs-lisp
-  (setq org-entities-user nil)
-  (add-to-list 'org-entities-user '("space" "\\ " nil " " " " " " "–"))
-  (add-to-list 'org-entities-user '("amacron" "\\={a}" nil "&#0257" "a" "a" "ā"))
-  (add-to-list 'org-entities-user '("emacron" "\\={e}" nil "&#0275" "e" "e" "ē"))
-  (add-to-list 'org-entities-user '("imacron" "\\={\\i}" nil "&#0299" "i" "i" "ī"))
-  (add-to-list 'org-entities-user '("omacron" "\\={o}" nil "&#0333" "o" "o" "ō"))
-  (add-to-list 'org-entities-user '("umacron" "\\={u}" nil "&#0363" "u" "u" "ū"))
-  (add-to-list 'org-entities-user '("Amacron" "\\={A}" nil "&#0256" "A" "A" "Ā"))
-  (add-to-list 'org-entities-user '("Emacron" "\\={E}" nil "&#0274" "E" "E" "Ē"))
-  (add-to-list 'org-entities-user '("Imacron" "\\={I}" nil "&#0298" "I" "I" "Ī"))
-  (add-to-list 'org-entities-user '("Omacron" "\\={O}" nil "&#0332" "O" "O" "Ō"))
-  (add-to-list 'org-entities-user '("Umacron" "\\={U}" nil "&#0362" "U" "U" "Ū"))
-#+end_src
-
-*** Link Type for Citations
+** Link Type for Citations
 
 #+name: define-cite-link
 #+header: :results silent :exports none
@@ -404,6 +402,131 @@ appropriate value.
            (format "\\cite{%s}" path)))))
 #+end_src
 
+** Access Keyword Values
+
+This is taken from [[http://jkitchin.github.io/blog/2013/05/05/Getting-keyword-options-in-org-files/][John Kitchin's blog]].  It has been modified so
+=org-element-map= returns node properties in addition to keywords. 
+
+#+name: jk-keywords
+#+header: :results silent
+#+begin_src emacs-lisp
+(defun jk-org-kwds ()
+  "parse the buffer and return a cons list of (property . value)
+from lines like: #+PROPERTY: value"
+  (org-element-map (org-element-parse-buffer 'element) '(keyword node-property)
+                   (lambda (keyword) (cons (org-element-property :key keyword)
+                                           (org-element-property :value keyword)))))
+
+(defun jk-org-kwd (KEYWORD)
+  "get the value of a KEYWORD in the form of #+KEYWORD: value"
+  (cdr (assoc KEYWORD (jk-org-kwds))))
+#+end_src
+
+*** Test Keyword Values
+
+The following source code block should return the value of
+the #+LANGUAGE: property declared near the top of this file.
+
+#+name: test-properties
+#+begin_src emacs-lisp
+  (jk-org-kwd "LANGUAGE")
+#+end_src
+
+** Tangle the Initialization File
+
+#+name: tangle-init-file
+#+header: :results silent
+#+begin_src emacs-lisp
+(org-babel-tangle)
+#+end_src
+
+** Preamble Source Code
+
+The source code block =plos-one-start= is called before the first
+headline. It takes information from the =author-table= and creates a
+title page that meets the following [[http://www.plosone.org/static/guidelines#format][/PLOS ONE/ specification]]:
+
+#+begin_quote
+The title, authors, and affiliations should all be included on a title
+page as the first page of the manuscript file.
+#+end_quote
+
+#+name: plos-one-start
+#+header: :var tab=author-table
+#+header: :var kwd="TITLE"
+#+header: :results raw 
+#+header: :wrap latex
+#+header: :colnames no 
+#+header: :hlines yes
+#+header: :noweb yes
+#+header: :exports results
+#+begin_src emacs-lisp
+  <<jk-keywords>>
+  (require 'cl)
+  (defun author-name (recs)
+    "Format the author name list."
+    (let ((i 0))
+      (mapcar (lambda (row)
+                (concat (format "%s$^{%d%s" (first row)
+                                (incf i)
+                                (if (equal "yes" (eighth row)) ",\\ast" ""))
+                        (if (equal row (car (last recs))) "}$" "}$,")))
+              recs)))
+  
+  (defun author-affiliation (recs)
+    "Format the author affiliation list."
+    (let ((i 0))
+      (mapcar (lambda (row)
+                (format "\\bf{%d} %s, %s, %s, %s, %s" (incf i)
+                        (second row) (third row) (fourth row)
+                        (fifth row) (sixth row)))
+              recs)))
+  (defun corresponding-email (recs)
+    "Return the corresponding email."
+    (mapcar (lambda (row)
+              (format "%s" (if (equal "yes" (eighth row)) (seventh row) "")))
+            recs))
+  
+  (let* ((tab (cdr (cdr tab)))
+         (a (author-name tab))
+         (b (author-affiliation tab))
+         (c (corresponding-email tab)))
+    (concat (format "\\begin{flushleft}\n{\\Large\n\\textbf{%s}\n}\n\\\\\n"
+                    (jk-org-kwd kwd))
+            (mapconcat 'identity a "\n") "\n\\\\\n"
+            (mapconcat 'identity b "\n\\\\\n")
+            "\n\\\\\n$\\ast$ E-mail: "
+            (mapconcat 'identity c "\n")
+            "\n\\end{flushleft}\n\\newpage"))
+#+end_src
+
+#+results: plos-one-start
+#+BEGIN_latex
+\begin{flushleft}
+{\Large
+\textbf{Structure and Growth of the Leeward Kohala Field System: An Analysis with Directed Graphs}
+}
+\\
+Thomas S. Dye$^{1,\ast}$
+\\
+\bf{1} Department of Anthropology, University of Hawai`i, Honolulu, HI, USA
+\\
+$\ast$ E-mail: tsd@tsdye.com
+\end{flushleft}
+#+END_latex
+
+** Ebib Setup
+#+name: ebib-setup
+#+begin_src emacs-lisp
+  (autoload 'ebib "ebib" "Ebib, a BibTeX database manager." t)
+  (dolist (hook '(org-mode-hook))
+    (add-hook hook (lambda () (local-set-key "\C-cb" 'ebib-insert-bibtex-key))))
+ (setq ebib-preload-bib-files (quote ("local.bib")))
+  (setq ebib-bib-search-dirs
+        (quote ("./")))
+#+end_src
+
+** Possibly Useful Code (not used)
 *** Nicolas Goaziou's Filter for Non-breaking Spaces
 Make the non-breaking space with alt-shift
 
@@ -427,7 +550,7 @@ space and single space.
 Add the placeholder with alt-shift-+
 
 #+name: tsd-textpm
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :results silent
 (defun tsd-latex-filter-textpm (text backend info)
   "Replace textpm placeholders in Beamer/LaTeX export."
   (when (memq backend '(beamer latex))
@@ -436,15 +559,10 @@ Add the placeholder with alt-shift-+
              'tsd-latex-filter-textpm)
 #+end_src
 
-#+results: tsd-textpm
-| tsd-latex-filter-textpm | tsd-latex-filter-textcites | tsd-latex-filter-parencites | ngz-latex-filter-nobreaks |
+*** Filter for Table Continuation Strings
 
-*** DONE Filter for table continuation strings
-   :LOGBOOK:
-   - State "DONE"       from "TODO"       [2013-11-07 Thu 21:05]
-   :END:
 #+name: tsd-continuation-strings
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :results silent
   (defun my-personal-table-continuation-strings (row backend info)
     (when (org-export-derived-backend-p backend 'latex)
       (replace-regexp-in-string
@@ -456,98 +574,31 @@ Add the placeholder with alt-shift-+
                'my-personal-table-continuation-strings)
 #+end_src
 
-#+results: tsd-continuation-strings
-| my-personal-table-continuation-strings |
-
-*** Access keyword values
-
-This is taken from [[http://jkitchin.github.io/blog/2013/05/05/Getting-keyword-options-in-org-files/][John Kitchin's blog]].  It has been modified so
-=org-element-map= returns node properties in addition to keywords. 
-
-#+name: jk-keywords
-#+header: :results silent
+*** User Entities
+#+name: user-entities
 #+begin_src emacs-lisp
-(defun jk-org-kwds ()
-  "parse the buffer and return a cons list of (property . value)
-from lines like: #+PROPERTY: value"
-  (org-element-map (org-element-parse-buffer 'element) '(keyword node-property)
-                   (lambda (keyword) (cons (org-element-property :key keyword)
-                                           (org-element-property :value keyword)))))
-
-(defun jk-org-kwd (KEYWORD)
-  "get the value of a KEYWORD in the form of #+KEYWORD: value"
-  (cdr (assoc KEYWORD (jk-org-kwds))))
+  (setq org-entities-user nil)
+  (add-to-list 'org-entities-user '("space" "\\ " nil " " " " " " "–"))
+  (add-to-list 'org-entities-user '("amacron" "\\={a}" nil "&#0257" "a" "a" "ā"))
+  (add-to-list 'org-entities-user '("emacron" "\\={e}" nil "&#0275" "e" "e" "ē"))
+  (add-to-list 'org-entities-user '("imacron" "\\={\\i}" nil "&#0299" "i" "i" "ī"))
+  (add-to-list 'org-entities-user '("omacron" "\\={o}" nil "&#0333" "o" "o" "ō"))
+  (add-to-list 'org-entities-user '("umacron" "\\={u}" nil "&#0363" "u" "u" "ū"))
+  (add-to-list 'org-entities-user '("Amacron" "\\={A}" nil "&#0256" "A" "A" "Ā"))
+  (add-to-list 'org-entities-user '("Emacron" "\\={E}" nil "&#0274" "E" "E" "Ē"))
+  (add-to-list 'org-entities-user '("Imacron" "\\={I}" nil "&#0298" "I" "I" "Ī"))
+  (add-to-list 'org-entities-user '("Omacron" "\\={O}" nil "&#0332" "O" "O" "Ō"))
+  (add-to-list 'org-entities-user '("Umacron" "\\={U}" nil "&#0362" "U" "U" "Ū"))
 #+end_src
 
-
-#+name: test-properties
-#+begin_src emacs-lisp
-(jk-org-kwd "LANGUAGE")
-#+end_src
-
-#+results: test-properties
-: en
-
-*** Tangle the initialization file
-
-#+name: tangle-init-file
-#+header: :results silent
-#+begin_src emacs-lisp
-(org-babel-tangle)
-#+end_src
-
-*** Ebib setup
-#+name: ebib-setup
-#+begin_src emacs-lisp
-  (autoload 'ebib "ebib" "Ebib, a BibTeX database manager." t)
-  (dolist (hook '(org-mode-hook))
-    (add-hook hook (lambda () (local-set-key "\C-cb" 'ebib-insert-bibtex-key))))
- (setq ebib-preload-bib-files (quote ("local.bib")))
-  (setq ebib-bib-search-dirs
-        (quote ("./")))
-#+end_src
-
-** Striking Image
-
-#+begin_quote
-Authors are encouraged to upload a "striking image" that may be used
-to represent their paper online in places like the journal homepage or
-in search results. The striking image must be derived from a figure or
-supporting information file from the paper, ie. a cropped portion of
-an image or the entire image. Striking images should ideally be high
-resolution, eye-catching, single panel images, and should ideally
-avoid containing added details such as text, scale bars, and arrows.
-If no striking image is uploaded, a figure from the paper will be
-designated as the striking image.
-#+end_quote
-
-** Author Table
-
-The =author-table= holds information on the authors and their
-affiliations.  It is assembled and placed on the title page by [[plos-one-start][this
-Emacs lisp source code block]].  Most of the column names should be
-self-explanatory. The =Corresponding= column should have "yes" or "no"
-entries that indicate whether or not the author is the corresponding
-author.
-
-*NOTE* Do not add a column or change the position of a column.  The
-rather simple-minded code that processes the table will be confused if
-you do.
-
-#+name: author-table
-| Author name | Department | Institution | City | State | Country | Email | Corresponding |
-|-------------+------------+-------------+------+-------+---------+-------+---------------|
-
-* Local variables                                                  :noexport:
+* Local Variables                                                  :noexport:
 
 # Local Variables: 
 # eval: (require 'ox-latex)
 # eval: (setq org-export-async-init-file (expand-file-name "init-plos.el"))
 # org-export-in-background: t 
 # org-export-async-debug: t 
-# org-fontify-quote-and-verse-blocks: t 
 # eval: (and (fboundp 'org-sbe) (not (fboundp 'sbe)) (fset 'sbe 'org-sbe))
-# eval: (sbe "user-entities")
 # eval: (sbe "define-cite-link")
 # eval: (sbe "ebib-setup")
 # End:
