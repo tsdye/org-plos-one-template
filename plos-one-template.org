@@ -42,12 +42,13 @@ document preparation.
 ** Emacs Local Variables
 
 The environment is set up with [[Local Variables][Emacs local variables]], which Emacs
-requires be found near the end of the file.
+requires be found near the end of the file.  
 
-The following lines initialize the Org mode LaTeX exporter, indicate
-the name of the asynchronous export initialization file, and then
-specify that asynchronous export should be used and that the export
-process should leave data behind in case there are problems.
+The following local variable lines initialize the Org mode LaTeX
+exporter, indicate the name of the asynchronous export initialization
+file, and then specify that asynchronous export should be used and
+that the export process should leave data behind in case there are
+problems.
 
 #+begin_example
 ,# eval: (require 'ox-latex)
@@ -56,43 +57,87 @@ process should leave data behind in case there are problems.
 ,# org-export-async-debug: t 
 #+end_example
 
-The following line provides compatibility across a recent Org mode
-function name change.
+The following local variable line provides compatibility across a
+recent Org mode function name change.
 
 #+begin_example
 ,# eval: (and (fboundp 'org-sbe) (not (fboundp 'sbe)) (fset 'sbe 'org-sbe))
 #+end_example
 
 
-The following line executes a source code block that defines an Org
-mode link that functions to insert a bibliographic reference.
+The following local variable line executes [[Link Type for Citations][a source code block]] that
+defines an Org mode link that functions to insert a bibliographic
+reference.
 
 #+begin_example
 ,# eval: (sbe "define-cite-link")
 #+end_example
 
 
+The final local variable line executes [[ebib-setup][a source code block]] that sets
+up the [[http://joostkremers.github.io/ebib/][Ebib]] BibTeX database manager.
+
+#+begin_example
+,# eval: (sbe "ebib-setup")
+#+end_example
+
 ** Asynchronous Export
+
+The /PLOS ONE/ template is set up to use the asynchronous Org mode
+exporter, both for the article and for the optional supporting
+information document.
+
+To export the article with point anywhere in the Org mode buffer, type
+=C-c C-e l o= or =C-c C-e l p=. The first of these will export a LaTeX
+file, compile it with pdflatex, then attempt to open the resulting pdf
+file. The second one does the same, but does not attempt to open the
+pdf file.
+
+To export the supporting information document, move point to the
+[[Supporting Information Document]] heading and type =C-c C-e C-s l o= or
+=C-c C-e C-s l p= to export the supporting information sub-tree.
 
 ** Custom Document Classes
 
+The /PLOS ONE/ template includes two custom document classes named
+=plos-devel= and =plos-submit=.  
+
+The document class =plos-devel= can be used when the article is being
+written. It includes figures in the exported document.
+
+The document class =plos-submit= can be used to make the pdf file that
+will be submitted to /PLOS ONE/. It includes figure captions, but does
+not insert the figures. /PLOS ONE/ requires that figures be submitted
+as separate tiff or eps format graphics files.
+
+The document class is set near the top of the file, with
+the =#+LATEX_CLASS:= property.  The default value set in the template
+is =plos-devel=.  In most cases it is convenient to use this document
+class until the article is complete and ready to be sent to the
+journal. Then, the =#+LATEX_CLASS:= property can be changed to
+=plos-submit= and the document exported in the usual way.
+
+** Using Ebib for Citations
+
+** Figures
+
 ** /PLOS ONE/ Supporting Information
 
-** Using Ebib
+** Checklist [0/10]                                 
 
-** Checklist [0/9]                                 
-
-  - [ ] Configure [[export-setup-plos-one][PLOS ONE initialization files]]
-  - [ ] Tangle initialization files by [[elisp:(sbe "tangle-init-file")][clicking here]]
-  - [ ] Fill out the [[author-table][author table]]
-  - [ ] Possibly configure the [[end-matter][bibliography command]]
-  - [ ] Configure the [[Supporting Information Document][supporting information document]] EXPORT_TITLE property
+  - [ ] Save this file as the file name of your choice, e.g., myarticle.org.
+  - [ ] Configure the [[export-setup-plos-one][PLOS ONE initialization files]]
+  - [ ] Tangle the initialization files by [[elisp:(sbe "tangle-init-file")][clicking here]]
+  - [ ] Complete the [[author-table][author table]]
+  - [ ] Possibly configure the [[end-matter][bibliography command]], or just use the
+    default local.bib
+  - [ ] Possibly configure the [[Supporting Information Document][supporting information document]] EXPORT_TITLE
+    property to reflect the title of your article 
   - [ ] Prepare a [[Striking Image][striking image]]
   - [ ] Prepare a [[PLOS-One Instructions for Cover Letter][cover letter]]
   - [ ] Optionally, export the supporting information document
   - [ ] Export the article
  
-
 * Abstract
 
 # add the abstract above this line
@@ -389,6 +434,12 @@ appropriate value.
 
 ** Link Type for Citations
 
+The following source code block defines a cite: link type.  The cite
+links will be inserted into the Org mode document by Ebib.  When the
+Org mode file is exported to LaTeX, a =\cite= command is inserted into
+the LaTeX file. This is the only type of citation allowed by the /PLOS
+ONE/ style.
+
 #+name: define-cite-link
 #+header: :results silent :exports none
 #+begin_src emacs-lisp
@@ -396,10 +447,8 @@ appropriate value.
    "cite" 'ebib
    (lambda (path desc format)
      (cond
-      ((eq format 'html)
-       (format "(<cite>%s</cite>)" path))
-      ((eq format 'latex)
-           (format "\\cite{%s}" path)))))
+       ((eq format 'latex)
+        (format "\\cite{%s}" path)))))
 #+end_src
 
 ** Access Keyword Values
@@ -516,14 +565,25 @@ $\ast$ E-mail: tsd@tsdye.com
 #+END_latex
 
 ** Ebib Setup
+
+This source code block initializes Ebib and binds =C-c b= to the command
+that inserts the cite: link.  It instructs Ebib to look for the BibTeX
+database, =local.bib=, in the current directory.
+
+The last line defines the command that inserts the cite: link.  It
+will prompt once for a description of the citation. The description is
+for convenience only, so the citation looks reasonable in the Org mode
+buffer.  It is not used during export.
+
 #+name: ebib-setup
 #+begin_src emacs-lisp
   (autoload 'ebib "ebib" "Ebib, a BibTeX database manager." t)
   (dolist (hook '(org-mode-hook))
     (add-hook hook (lambda () (local-set-key "\C-cb" 'ebib-insert-bibtex-key))))
- (setq ebib-preload-bib-files (quote ("local.bib")))
-  (setq ebib-bib-search-dirs
-        (quote ("./")))
+  (setq ebib-bib-search-dirs (quote ("./")))
+  (setq ebib-preload-bib-files (quote ("local.bib")))
+  (setq ebib-citation-commands
+        (quote ((org-mode (("cite" "[[cite:%K][%A]]"))))))
 #+end_src
 
 ** Possibly Useful Code (not used)
