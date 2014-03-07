@@ -9,24 +9,12 @@
 
 #+call: plos-one-start(kwd="TITLE") :wrap latex
 
-* Notes (temporary)                                                :noexport:
-
-** TODO Write instructions
-
-** DONE Add ebib stuff
-   :LOGBOOK:
-   - State "DONE"       from "TODO"       [2014-03-02 Sun 09:49]
-   :END:
-
-** DONE Make github repo
-   :LOGBOOK:
-   - State "DONE"       from "TODO"       [2014-03-02 Sun 08:37]
-   :END:
-* Instructions for Your /PLOS ONE/ Article                         :noexport:
+* Instructions for Use                                             :noexport:
 
 This file provides a template to export an Org mode file to a LaTeX
-file that meets the specifications of the open-access journal [[http://www.plosone.org][/PLOS
-ONE/]]. It features:
+file that meets the specifications of the open-access journal
+[[http://www.plosone.org][/PLOS ONE/]]. It features:
+
  - environment setup with [[https://www.gnu.org/software/emacs/manual/html_node/emacs/File-Variables.html][Emacs local variables]];
  - [[http://orgmode.org/manual/The-Export-Dispatcher.html][asynchronous export]] to pdf via LaTeX;
  - [[http://en.wikibooks.org/wiki/LaTeX/Document_Structure#Document_classes][custom document classes]] for article development and for submitting
@@ -119,9 +107,76 @@ journal. Then, the =#+LATEX_CLASS:= property can be changed to
 
 ** Using Ebib for Citations
 
+The file is set up to use Ebib for citations.  Ebib is a convenient
+tool that uses Emacs for display, but otherwise operates
+independently. You can learn how to use Ebib with its excellent [[http://joostkremers.github.io/ebib/][user
+manual]]. Please be aware that the current user manual is hosted on
+github and that the old user manual, hosted on sourceforge, is what
+Google finds. An easy way to tell them apart is the background color;
+the old manual has a maroon background and the new one has a
+bluish background. 
+
+Ebib is set up to know about the default bibliography database,
+local.bib. If you are used to working in a LaTeX environment and have
+one or more bibliographic databases, you can choose either to transfer
+entries from your own database to local.bib, or you can configure the
+template to use more than one bibliographic database.  There are
+instructions below on how to add a bibliographic database to the
+template. 
+
+You start Ebib with M-x ebib RET.  By default, you should see the
+local.bib with a single entry. Ebib uses single keystrokes for
+commands. Press =z= to lower Ebib and return to this document.
+
+There are several ways to insert a reference into your document. The
+first, and the one I use most often, is bound by the template to =C-c
+b=. Ebib will prompt for the citation key to use, then for the
+citation command, and finally, for Argument 1, which specifies how the
+citation will look in the Org mode buffer.
+
+The sequence =C-c b=, =sch TAB RET=, =c TAB RET=, =schulte= inserts
+the following reference: [[cite:schulte12:_multi_languag_comput_envir_liter][schulte]].  Clicking on the link will take you
+to the entry of local.bib.  Press =z= in Ebib to return to this document.
+
+*** Adding Another BibTeX Database
+
+ - [ ] Add the database name to the [[end-matter][LaTeX =\bibliography= command]]
+ - [ ] If you are making a  [[http://biostats.bepress.com/bioconductor/paper2/][compendium]], add the database name to the
+   [[compendium-contents][compendium contents table]]
+ - [ ] Modify the [[ebib-setup][Ebib setup code]] and execute the source code block
+
 ** Figures
 
-** /PLOS ONE/ Supporting Information
+/PLOS ONE/ has a [[http://www.plosone.org/static/figureGuidelines#titles][detailed specification for figures]].  You are
+encouraged to read it carefully.  In particular, you'll need to
+produce either =tiff= or =eps= files to submit to the journal.
+
+If you are planning to distribute a  [[http://biostats.bepress.com/bioconductor/paper2/][compendium]] with your paper, then
+you will want to develop the figures in the [[Supporting Information Document][supporting information
+document]] section, so the code involved in their construction can be
+easily packaged.
+
+The figures for the paper are inserted in the [[Figure Legends][section for figure
+legends]], in the usual Org mode way.
+
+I develop the paper using the =#+LATEX_CLASS:= plos-devel and insert
+the figures as LaTeX-friendly =pdf= or =jpg= files.  This way I can
+see that the figures are right with their captions and I can
+distribute the draft paper to colleagues as a single =pdf= document
+with figures.
+
+When it is time to submit to the journal, I switch the =#+LATEX_CLASS=
+to plos-submit, which removes the figures, but leaves the figure
+captions.  At that time, the LaTeX-friendly figures can be converted
+to either =tiff= or =eps= format for the journal.
+
+** /PLOS ONE/ Supporting Information Document
+
+/PLOS ONE/ will accept a  [[http://biostats.bepress.com/bioconductor/paper2/][compendium]] in =pdf= format as Supporting
+Information. The template supports this effort by partially populating
+two tables, one that lists the [[open-source-software][software used to produce the paper]] and
+the other that includes [[compendium-contents][links to graphic and other files]] archived
+within the =pdf= file. 
 
 ** Checklist [0/10]                                 
 
@@ -135,8 +190,10 @@ journal. Then, the =#+LATEX_CLASS:= property can be changed to
     property to reflect the title of your article 
   - [ ] Prepare a [[Striking Image][striking image]]
   - [ ] Prepare a [[PLOS-One Instructions for Cover Letter][cover letter]]
-  - [ ] Optionally, export the supporting information document
-  - [ ] Export the article
+  - [ ] Optionally, export the supporting information document by
+    pressing =C-c C-e C-s l o= with the point in the [[Supporting
+    Information Document][supporting information document]] headline
+  - [ ] Export the article, by pressing =C-c C-e l o= anywhere in the document
  
 * Abstract
 
@@ -162,7 +219,7 @@ The abstract should:
 
 #+name: end-matter
 #+begin_latex
-  % Add the base name of the .bib file(s) between the curly braces 
+  % Add the base name of new .bib file(s) between the curly braces 
   \bibliography{local}
   \clearpage
 #+end_latex
@@ -281,13 +338,15 @@ self-explanatory. The =Corresponding= column should have "yes" or "no"
 entries that indicate whether or not the author is the corresponding
 author.
 
-*NOTE* Do not add a column or change the position of a column.  The
-rather simple-minded code that processes the table will be confused if
-you do.
-
 #+name: author-table
 | Author name | Department | Institution | City | State | Country | Email | Corresponding |
 |-------------+------------+-------------+------+-------+---------+-------+---------------|
+
+
+*NOTE* Do not add, delete, or change the position of a column in the
+=author-table=.  The [[plos-one-start][simple-minded code]] that processes the
+table will be confused if you do.
+
 * /PLOS ONE/ Template Source Code                                  :noexport:
 ** Export setup for /PLOS ONE/
 
@@ -440,17 +499,18 @@ Org mode file is exported to LaTeX, a =\cite= command is inserted into
 the LaTeX file. This is the only type of citation allowed by the /PLOS
 ONE/ style.
 
+
 #+name: define-cite-link
 #+header: :results silent :exports none
 #+begin_src emacs-lisp
   (org-add-link-type
-   "cite" 'ebib
+   "cite" 'ebib-open-org-link
    (lambda (path desc format)
      (cond
        ((eq format 'latex)
         (format "\\cite{%s}" path)))))
 #+end_src
-
+[[cite:schulte12:_multi_languag_comput_envir_liter][schulte]]
 ** Access Keyword Values
 
 This is taken from [[http://jkitchin.github.io/blog/2013/05/05/Getting-keyword-options-in-org-files/][John Kitchin's blog]].  It has been modified so
@@ -549,31 +609,24 @@ page as the first page of the manuscript file.
             "\n\\end{flushleft}\n\\newpage"))
 #+end_src
 
-#+results: plos-one-start
-#+BEGIN_latex
-\begin{flushleft}
-{\Large
-\textbf{Structure and Growth of the Leeward Kohala Field System: An Analysis with Directed Graphs}
-}
-\\
-Thomas S. Dye$^{1,\ast}$
-\\
-\bf{1} Department of Anthropology, University of Hawai`i, Honolulu, HI, USA
-\\
-$\ast$ E-mail: tsd@tsdye.com
-\end{flushleft}
-#+END_latex
-
 ** Ebib Setup
 
-This source code block initializes Ebib and binds =C-c b= to the command
-that inserts the cite: link.  It instructs Ebib to look for the BibTeX
-database, =local.bib=, in the current directory.
+This source code block initializes Ebib and binds =C-c b= to the
+command that inserts the =cite:= link.  It instructs Ebib to look for
+the BibTeX database, =local.bib=, in the current directory and puts
+=local.bib= on the list of local BibTeX file names.  The last line
+defines the command that inserts the =cite:= link.  
 
-The last line defines the command that inserts the cite: link.  It
-will prompt once for a description of the citation. The description is
-for convenience only, so the citation looks reasonable in the Org mode
-buffer.  It is not used during export.
+If you want to add another BibTeX database to the setup, then you
+might need to modify this code in three places.  For example, to also
+load a database named =main.bib= that is found in the =biblio= folder
+of the user's home directory:
+
+#+begin_example
+  (setq ebib-bib-search-dirs (quote ("./" "~/biblio")))
+  (setq ebib-preload-bib-files (quote ("local.bib" "main.bib")))
+  (setq ebib-local-bibtex-filenames (quote ("local.bib" "main.bib")))
+#+end_example
 
 #+name: ebib-setup
 #+begin_src emacs-lisp
@@ -582,6 +635,7 @@ buffer.  It is not used during export.
     (add-hook hook (lambda () (local-set-key "\C-cb" 'ebib-insert-bibtex-key))))
   (setq ebib-bib-search-dirs (quote ("./")))
   (setq ebib-preload-bib-files (quote ("local.bib")))
+  (setq ebib-local-bibtex-filenames (quote ("local.bib")))
   (setq ebib-citation-commands
         (quote ((org-mode (("cite" "[[cite:%K][%A]]"))))))
 #+end_src
@@ -662,7 +716,6 @@ Add the placeholder with alt-shift-+
 # eval: (sbe "define-cite-link")
 # eval: (sbe "ebib-setup")
 # End:
-
 
 
               
