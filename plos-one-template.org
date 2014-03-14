@@ -118,21 +118,19 @@ the old manual has a maroon background and the new one has a
 bluish background. 
 
 Ebib is set up to know about the default bibliography database,
-local.bib. If you are used to working in a LaTeX environment and have
+=local.bib=. If you are used to working in a LaTeX environment and have
 one or more bibliographic databases, you can choose either to transfer
 entries from your own database to local.bib, or you can configure the
-template to use more than one bibliographic database.  There are
-instructions below on how to add a bibliographic database to the
-template. 
+template to use more than one bibliographic database.
 
-You start Ebib with M-x ebib RET.  By default, you should see the
+You start Ebib with =M-x ebib RET=.  By default, you should see the
 local.bib with a single entry. Ebib uses single keystrokes for
 commands. Press =z= to lower Ebib and return to this document.
 
 There are several ways to insert a reference into your document. The
 first, and the one I use most often, is bound by the template to =C-c
 b=. Ebib will prompt for the citation key to use, then for the
-citation command, and finally, for Argument 1, which specifies how the
+citation command, and finally, for a =Description=, which specifies how the
 citation will look in the Org mode buffer.
 
 The sequence =C-c b=, =sch TAB RET=, =c TAB RET=, =schulte= inserts
@@ -185,8 +183,7 @@ within the =pdf= file.
   - [ ] Configure the [[export-setup-plos-one][PLOS ONE initialization files]]
   - [ ] Tangle the initialization files by [[elisp:(sbe "tangle-init-file")][clicking here]]
   - [ ] Complete the [[author-table][author table]]
-  - [ ] Possibly configure the [[end-matter][bibliography command]], or just use the
-    default local.bib
+  - [ ] Possibly configure the [[end-matter][bibliography command]]
   - [ ] Possibly configure the [[Supporting Information Document][supporting information document]] EXPORT_TITLE
     property to reflect the title of your article 
   - [ ] Prepare a [[Striking Image][striking image]]
@@ -494,18 +491,18 @@ appropriate value.
 
 ** Link Type for Citations
 
-The following source code block defines a cite: link type.  The cite
-links will be inserted into the Org mode document by Ebib.  When the
-Org mode file is exported to LaTeX, a =\cite= command is inserted into
-the LaTeX file. This is the only type of citation allowed by the /PLOS
-ONE/ style.
+The following source code block defines an =ebib:= link type.  The
+=ebib:= links will be inserted into the Org mode document by Ebib.
+When the Org mode file is exported to LaTeX, a =\cite= command is
+inserted into the LaTeX file. This is the only type of citation
+allowed by the /PLOS ONE/ style.
 
 
 #+name: define-cite-link
 #+header: :results silent :exports none
 #+begin_src emacs-lisp
   (org-add-link-type
-   "cite" 'ebib-open-org-link
+   "ebib" 'ebib-open-org-link
    (lambda (path desc format)
      (cond
        ((eq format 'latex)
@@ -615,32 +612,30 @@ page as the first page of the manuscript file.
 This source code block initializes Ebib and binds =C-c b= to the
 command that inserts the =cite:= link.  It instructs Ebib to look for
 the BibTeX database, =local.bib=, in the current directory and puts
-=local.bib= on the list of local BibTeX file names.  The last line
-defines the command that inserts the =cite:= link.  
+=local.bib= on the list of local BibTeX file names.
 
-If you want to add another BibTeX database to the setup, then you
-might need to modify this code in three places.  For example, to also
-load a database named =main.bib= that is found in the =biblio= folder
-of the user's home directory:
+If you are new to Ebib and have installed the program, but have not
+set it up on your system or started it, then the [[ebib-setup][Ebib setup]] below
+should work for you.
 
-#+begin_example
-  (setq ebib-bib-search-dirs (quote ("./" "~/biblio")))
-  (setq ebib-preload-bib-files (quote ("local.bib" "main.bib")))
-  (setq ebib-local-bibtex-filenames (quote ("local.bib" "main.bib")))
-#+end_example
+If you have installed the program and have it set up already, then you
+will want to modify the [[ebib-setup][Ebib setup]] by removing or commenting out
+=<<ebib-setup-general>>. 
 
 #+name: ebib-setup
+#+header: :noweb yes
+#+header: :results silent
+#+begin_src emacs-lisp
+<<ebib-setup-general>>
+<<ebib-setup-local>>
+#+end_src
+
+#+name: ebib-setup-general
 #+begin_src emacs-lisp
   (autoload 'ebib "ebib" "Ebib, a BibTeX database manager." t)
   (dolist (hook '(org-mode-hook))
     (add-hook hook (lambda () (local-set-key "\C-cb" 'ebib-insert-bibtex-key))))
-  (setq ebib-bib-search-dirs (quote ("./")))
-  (setq ebib-preload-bib-files (quote ("local.bib")))
-  (setq ebib-local-bibtex-filenames (quote ("local.bib")))
-  (setq ebib-citation-commands
-        (quote ((org-mode (("cite" "[[cite:%K][%A]]"))))))
 #+end_src
-
 ** Possibly Useful Code (not used)
 *** Nicolas Goaziou's Filter for Non-breaking Spaces
 Make the non-breaking space with alt-shift
@@ -706,6 +701,11 @@ Add the placeholder with alt-shift-+
   (add-to-list 'org-entities-user '("Umacron" "\\={U}" nil "&#0362" "U" "U" "Ū"))
 #+end_src
 
+
+#+name: ebib-setup-local
+#+begin_src emacs-lisp
+  (setq ebib-local-bibtex-filenames (quote ("local.bib")))
+#+end_src
 * Local Variables                                                  :noexport:
 
 # Local Variables: 
